@@ -11,24 +11,8 @@ const firebaseConfig = {
 firebase.initializeApp(firebaseConfig);
 var db = firebase.database();
 
-var form = document.getElementById("thresholdForm");
-form.addEventListener('submit', function (e) {
-    e.preventDefault();
-    
-    var temperature = document.getElementById('temperature').value;
-    var humidity = document.getElementById('humidity').value;
-    
-    db.ref('Thresholds').set({
-        Temperature: temperature,
-        Humidity: humidity
-    })
-});
-
 async function retrieveData() {
     try {
-        var temperature = document.getElementById('Temperature');
-        var humidity = document.getElementById('Humidity');
-
         var temperatureDocument = db.ref('SensorValues/Temperature');
         var humidityDocument = db.ref('SensorValues/Humidity');
         
@@ -38,12 +22,10 @@ async function retrieveData() {
         temperatureDocument.on('value', function(snapshot) {
             var data = snapshot.val();
             temperatureValue = data;
-            temperature.innerText = "Temperature: " + data;
         });
         humidityDocument.on('value', function(snapshot) {
             var data = snapshot.val();
             humidityValue = data;
-            humidity.innerText = "Humidity: " + data;
         });
         
         let jsonData = {
@@ -73,7 +55,6 @@ async function getTime() {
 async function updateChart() {
     const data = await retrieveData();
     const time = await getTime();
-    const {temperature, humidity} = data;
     
     const temperatureCanvas = document.getElementById('temperatureChart');
     const humidityCanvas = document.getElementById('humidityChart');
@@ -131,16 +112,13 @@ function getData() {
     var temperatureDocument = db.ref('SensorValues/Temperature');
     var humidityDocument = db.ref('SensorValues/Humidity');
     
-    var temperatureValue = 0, humidityValue = 0;
-    
     temperatureDocument.on('value', function(snapshot) {
         var data = snapshot.val();
-        temperatureValue = data;
+        alert(data);
         temperature.innerText = "Temperature: " + data;
     });
     humidityDocument.on('value', function(snapshot) {
         var data = snapshot.val();
-        humidityValue = data;
         humidity.innerText = "Humidity: " + data;
     });
 };
