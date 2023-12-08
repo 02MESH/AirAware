@@ -114,7 +114,6 @@ function getData() {
     
     temperatureDocument.on('value', function(snapshot) {
         var data = snapshot.val();
-        alert(data);
         temperature.innerText = "Temperature: " + data;
     });
     humidityDocument.on('value', function(snapshot) {

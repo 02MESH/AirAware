@@ -58,10 +58,14 @@
                 <label for="humidity">Humidity (%):</label>
                 <input type="number" name="humidity" id="humidity">
             </div>
+            <div class="form-control">
+                <label for="number">Phone Number (+44):</label>
+                <input type="number" name="number" id="number">
+            </div>
             <button type="submit">Submit</button>
         </form>
     </div>
-
+    
     <script src="../util/main.js"></script>
     <script>
         var form = document.getElementById("thresholdForm");
@@ -70,6 +74,7 @@
             
             var temperature = document.getElementById('temperature').value;
             var humidity = document.getElementById('humidity').value;
+            var phoneNumber = document.getElementById('number').value;
             
             db.ref('Thresholds').set({
                 Temperature: temperature,
