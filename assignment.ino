@@ -30,6 +30,26 @@ DHT dht(DHTPIN, DHTTYPE);
 #include "Adafruit_PM25AQI.h"
 Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
 
+//Twilio
+// #include "twilio.hpp"
+// // Values from Twilio (find them on the dashboard)
+// static const char *account_sid = "AC9782d8bc25daa6b8ed4a1c909d7733c3";
+// static const char *auth_token = "c57120e3acc2476f3a6246a859848087";
+// // Phone number should start with "+<countrycode>"
+// static const char *from_number = "+447893938729";
+
+// static char *to_number = "";
+
+// char *getNumber() {
+//   Firebase.RTDB.getString(&fbdo, "PhoneNumber") {
+//     if (fbdo.dataTypeEnum() == firebase_rtdb_data_type_string) {
+//       Serial.print(fbdo.to());
+//     } else {
+//       Serial.println(fbdo.errorReason());
+//     }
+//   }
+// }
+
 void setup() {
   Serial.begin(115200);
 
@@ -72,7 +92,7 @@ int humidity = 0;
 void loop() {
   counter++;
 
-  if(Firebase.ready()) {
+  if (Firebase.ready()) {
     //DHT
     float h = dht.readHumidity();
     float t = dht.readTemperature();
@@ -87,7 +107,7 @@ void loop() {
 
     //Temperature value insertion
     temperature += t;
-    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/Temperature", temperature/counter)) {
+    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/Temperature", temperature / counter)) {
       Serial.println("Temperature value add successful");
     } else {
       Serial.println("Temperature failed! " + fbdo.errorReason());
@@ -95,7 +115,7 @@ void loop() {
 
     //Humidity value insertion
     humidity += h;
-    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/Humidity", humidity/counter)) {
+    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/Humidity", humidity / counter)) {
       Serial.println("Humidity value add successful");
     } else {
       Serial.println("Humidity failed! " + fbdo.errorReason());
@@ -103,29 +123,25 @@ void loop() {
 
     //PM2.5 sensor (Standard values)
     aqi.read(&data);
-    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM10", data.pm10_standard) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM25", data.pm25_standard) && 
-    Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM100", data.pm100_standard)) {
+    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM10", data.pm10_standard) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM25", data.pm25_standard) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/StandardConcentration/PM100", data.pm100_standard)) {
       Serial.println("Particle sensor value registration successful");
     } else {
       Serial.println("Particle sensor standard values registration unsuccessful");
     }
 
     //(Environmental values)
-    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM10", data.pm10_env) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM25", data.pm25_env) && 
-    Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM100", data.pm100_env)) {
+    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM10", data.pm10_env) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM25", data.pm25_env) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/EnvironmentalConcentration/PM100", data.pm100_env)) {
       Serial.println("Particle sensor environmental values registration successful");
     } else {
       Serial.println("Particle sensor environmental values registration unsuccessful");
     }
 
     //(Particle size)
-    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/3", data.particles_03um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/5", data.particles_05um) && 
-    Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/10", data.particles_10um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/25um", data.particles_25um) && 
-    Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/50um", data.particles_50um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/100um", data.particles_100um)) {
-      Serial.println("Particle sensor particle size values registration successful");
-    } else {
-      Serial.println("Particle sensor particle size values registration unsuccessful");
-    }
+    // if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/3", data.particles_03um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/5", data.particles_05um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/10", data.particles_10um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/25um", data.particles_25um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/50um", data.particles_50um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/100um", data.particles_100um)) {
+    //   Serial.println("Particle sensor particle size values registration successful");
+    // } else {
+    //   Serial.println("Particle sensor particle size values registration unsuccessful");
+    // }
   }
 
   Serial.println();
