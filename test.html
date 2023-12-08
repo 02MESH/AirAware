@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Temperature and Humidity Tracker</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        .chart-container {
+            width: 500px;
+            height: 300px;
+        }
+
+        .chart {
+            width: 100%;
+            height: 100%;
+        }
+
+        /* Styling for displaying temperature and humidity values */
+        #temperatureValue,
+        #humidityValue {
+            font-size: 40px;
+            font-weight: bold;
+            margin-top: 10px;
+        }
+
+        /* Styling for color changes */
+        .red {
+            color: red;
+        }
+
+        .orange {
+            color: orange;
+        }
+
+        .green {
+            color: lightgreen;
+        }
+
+        .blue {
+            color: blue;
+        }
+    </style>
+</head>
+
+<body>
+    <h1><u>Temperature & Humidity Tracker By - kr397@kent.ac.uk</u></h1>
+    <b>Displays the Arduino temperature and humidity in various forms.</b>
+    <h2><u>Graph Form</u></h2>
+    <canvas id="temperatureChart" class="chart" width="350" height="50"></canvas>
+    <canvas id="humidityChart" class="chart" width="350" height="50"></canvas>
+
+    <script>
+        let alertCounterTemperature = 0; // so the alert only happens
+        let alertCounterHumidity = 0;
+        let previousColorTemperature = '';
+        let previousColorHumidity = '';
+
+        // Fetch data from ThingSpeak
+        async function fetchData() {
+            const channelID = '2349058';
+            const apiKey = 'AB5OGWH761URQPHL';
+            const url = `https://api.thingspeak.com/channels/${channelID}/feeds.json?api_key=${apiKey}&results=10`;
+
+            try {
+                const response = await fetch(url);
+                const data = await response.json();
+                const feeds = data.feeds;
+
+                const timeLabels = feeds.map(feed => {
+                    const time = new Date(feed.created_at);
+                    return time.toLocaleTimeString('en-UK', { hour12: false }); // Format time to HH:MM:SS
+                });
+                const temperatures = feeds.map(feed => parseFloat(feed.field1));
+                const humidities = feeds.map(feed => parseFloat(feed.field2));
+
+                return { timeLabels, temperatures, humidities };
+            } catch (error) {
+                console.error('Error fetching data:', error);
+                return null;
+            }
+        }
+
+        // Update chart
+        async function updateChart() {
+            const fetchedData = await fetchData();
+            const { timeLabels, temperatures, humidities } = fetchedData;
+
+            const temperatureCanvas = document.getElementById('temperatureChart').getContext('2d');
+            const humidityCanvas = document.getElementById('humidityChart').getContext('2d');
+
+            const temperatureChart = new Chart(temperatureCanvas, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Temperature (in celsius °C)',
+                        data: temperatures,
+                        borderColor: 'red',
+                        fill: false
+                    }]
+                },
+                options: {}
+            });
+
+            const humidityChart = new Chart(humidityCanvas, {
+                type: 'line',
+                data: {
+                    labels: timeLabels,
+                    datasets: [{
+                        label: 'Humidity (as a percentage %)',
+                        data: humidities,
+                        borderColor: 'blue',
+                        fill: false
+                    }]
+                },
+                options: {}
+            });
+
+            // Function to set color for temperature
+            function getColorForTemperature(temperature) {
+                if (temperature >= 30) {
+                    return 'red';
+                } if (temperature <= 29 && temperature >= 25) {
+                    return 'orange';
+                } if (temperature <= 24 && temperature >= 20) {
+                    return 'green';
+                } else {
+                    return 'blue';
+                }
+            }
+
+            // Function to set color for humidity
+            function getColorForHumidity(humidity) {
+                if (humidity >= 65) {
+                    return 'red';
+                } if (humidity >= 50 && humidity <= 64) {
+                    return 'orange';
+                } if (humidity <= 49 && humidity >= 31) {
+                    return 'green';
+                } else {
+                    return 'blue';
+                }
+            }
+
+            // Update charts at regular intervals
+            setInterval(async () => {
+                const updatedData = await fetchData();
+
+                temperatureChart.data.labels = updatedData.timeLabels;
+                temperatureChart.data.datasets[0].data = updatedData.temperatures;
+
+                humidityChart.data.labels = updatedData.timeLabels;
+                humidityChart.data.datasets[0].data = updatedData.humidities;
+
+                temperatureChart.update();
+                humidityChart.update();
+
+                const temperatureValue = document.getElementById('temperatureValue');
+                const humidityValue = document.getElementById('humidityValue');
+
+                if (updatedData) {
+                    const latestTemperature = updatedData.temperatures[updatedData.temperatures.length - 1];
+                    const latestHumidity = updatedData.humidities[updatedData.humidities.length - 1];
+
+                    temperatureValue.textContent = `Temperature: ${latestTemperature}°C`;
+                    temperatureValue.className = getColorForTemperature(latestTemperature);
+
+                    humidityValue.textContent = `Humidity: ${latestHumidity}%`;
+                    humidityValue.className = getColorForHumidity(latestHumidity);
+                }
+
+
+                // Reset counters on color changes for temperature. 
+                //This is needed so it can re alert the user again if the color changes.
+                if (temperatureValue.className !== previousColorTemperature) {
+                    alertCounterTemperature = 0;
+                    previousColorTemperature = temperatureValue.className;
+                }
+
+                // Reset counters on color changes for humidity
+                if (humidityValue.className !== previousColorHumidity) {
+                    alertCounterHumidity = 0;
+                    previousColorHumidity = humidityValue.className;
+                }
+
+
+
+                // Alerts for temperature conditions
+                if (temperatureValue.className === 'orange' && alertCounterTemperature === 0 || temperatureValue.className === 'red' && alertCounterTemperature === 0) {
+                    alert('Cool down the room. It is too warm');
+                    alertCounterTemperature = 1;
+
+
+                } else if (temperatureValue.className === 'blue' && alertCounterTemperature == 0) {
+                    alert('Warm up the room. It is too cold.');
+                    alertCounterTemperature = 1;
+
+                }
+
+                // Alerts for humidity conditions
+                if (humidityValue.className === 'orange' && alertCounterHumidity === 0 || humidityValue.className === 'red' && alertCounterHumidity === 0) {
+                    alert('Dehumidify the room. It is too humid.');
+                    alertCounterHumidity = 1;
+
+
+                } else if (humidityValue.className === 'blue' && alertCounterHumidity === 0) {
+                    alert('Humidify the room! It needs to be more humid.');
+                    alertCounterHumidity = 1;
+
+                }
+
+
+            }, 1000);
+        }
+
+        // Call updateChart function to start updating the charts
+        updateChart();
+    </script>
+
+    <h2><u> Changing Color Numbers Below</u></h2>
+    <b>This depends on how high or low the temperature and humidity is in their respective values.</b>
+    <b>
+        <p>Temperature: Red = Above 30, Orange = 25 to 29, Green = 20 to 24, blue = 19 and less.</p>
+    </b>
+    <b>
+        <p>Humidity: Red = above 65%, Orange = 50 to 65%, Green = 30 to 49%, blue = 30% or less. </p>
+    </b>
+
+    <!-- Divs to display current temperature and humidity -->
+    <div>
+        <div id="temperatureValue"></div>
+        <div id="humidityValue"></div>
+    </div>
+
+
+    <br> </br>
+
+</body>
+
+</html>

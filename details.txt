@@ -1,0 +1,9 @@
+const firebaseConfig = {
+  apiKey: "AIzaSyD3kkHqfGoEcl-njGv686743J9NfCHIrU4",
+  authDomain: "airaware-d3ab4.firebaseapp.com",
+  databaseURL: "https://airaware-d3ab4-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "airaware-d3ab4",
+  storageBucket: "airaware-d3ab4.appspot.com",
+  messagingSenderId: "410097835898",
+  appId: "1:410097835898:web:820c1e66884c0f752200c3"
+};
