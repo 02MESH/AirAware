@@ -1,3 +1,4 @@
+#include <string>
 //Firebase modules
 #include <Arduino.h>
 #include <Firebase_ESP_Client.h>
@@ -31,14 +32,16 @@ DHT dht(DHTPIN, DHTTYPE);
 Adafruit_PM25AQI aqi = Adafruit_PM25AQI();
 
 //Twilio
-// #include "twilio.hpp"
-// // Values from Twilio (find them on the dashboard)
-// static const char *account_sid = "AC9782d8bc25daa6b8ed4a1c909d7733c3";
-// static const char *auth_token = "c57120e3acc2476f3a6246a859848087";
-// // Phone number should start with "+<countrycode>"
-// static const char *from_number = "+447893938729";
+#include "twilio.hpp"
+// Values from Twilio (find them on the dashboard)
+static const char *account_sid = "AC9782d8bc25daa6b8ed4a1c909d7733c3";
+static const char *auth_token = "c57120e3acc2476f3a6246a859848087";
+// Phone number should start with "+<countrycode>"
+static const char *from_number = "+447893938729";
+static char *to_number = "+447865076487";
+unsigned long lastExecutionTime = 0;
 
-// static char *to_number = "";
+Twilio *twilio = new Twilio(account_sid, auth_token);
 
 // char *getNumber() {
 //   Firebase.RTDB.getString(&fbdo, "PhoneNumber") {
@@ -89,10 +92,72 @@ int counter = 0;
 int temperature = 0;
 int humidity = 0;
 
+void breachedThreshold(int temperature, int humidity) {
+  String message = "";
+  bool transmitMessage = false;
+  int minTemperature = 0, maxTemperature = 30, minHumidity = 0, maxHumidity = 30;
+
+  if (Firebase.RTDB.getString(&fbdo, "/Thresholds/Min_Humidity")) {
+    if (fbdo.dataTypeEnum() == firebase_rtdb_data_type_integer)
+      minHumidity = fbdo.to<int>();
+    else
+      Serial.println(fbdo.errorReason());
+  }
+  if (Firebase.RTDB.getString(&fbdo, "/Thresholds/Max_Humidity")) {
+    if (fbdo.dataTypeEnum() == firebase_rtdb_data_type_integer)
+      maxHumidity = fbdo.to<int>();
+    else
+      Serial.println(fbdo.errorReason());
+  }
+  if (Firebase.RTDB.getString(&fbdo, "/Thresholds/Min_Temperature")) {
+    if (fbdo.dataTypeEnum() == firebase_rtdb_data_type_integer)
+      minTemperature = fbdo.to<int>();
+    else
+      Serial.println(fbdo.errorReason());
+  }
+  if (Firebase.RTDB.getString(&fbdo, "/Thresholds/Max_Temperature")) {
+    if (fbdo.dataTypeEnum() == firebase_rtdb_data_type_integer)
+      maxTemperature = fbdo.to<int>();
+    else
+      Serial.println(fbdo.errorReason());
+  }
+
+  // Temperature block
+  if (temperature < minTemperature || temperature > maxTemperature) {
+    message += "Temperature is " + String(temperature) + "°C";
+    transmitMessage = true;
+    if (temperature < minTemperature) {
+      message += ", which has breached the threshold. Close the windows or turn on the heater. ";
+    } else if (temperature > maxTemperature) {
+      message += ", which has breached the threshold. Open the windows or turn off the heater. ";
+    }
+  }
+
+  // Humidity block
+  if (humidity < minHumidity || humidity > maxHumidity) {
+    message += "Humidity is " + String(humidity) + "%";
+    transmitMessage = true;
+    if (humidity < minHumidity) {
+      message += ", which has breached the threshold. Please open the window.";
+    } else if (humidity > maxHumidity) {
+      message += ", which has breached the threshold. Please open the window.";
+    }
+  }
+
+  unsigned long currentTime = millis();
+
+  if (transmitMessage && currentTime - lastExecutionTime >= 60000) {
+    String response;
+    twilio->send_message(to_number, from_number, message.c_str(), response);
+    lastExecutionTime = currentTime;
+  }
+}
+
 void loop() {
   counter++;
 
   if (Firebase.ready()) {
+
     //DHT
     float h = dht.readHumidity();
     float t = dht.readTemperature();
@@ -101,6 +166,8 @@ void loop() {
       Serial.println(F("Failed to read from DHT sensor!"));
       return;
     }
+
+    breachedThreshold(t, h);
 
     //PM2.5
     PM25_AQI_Data data;
@@ -137,11 +204,13 @@ void loop() {
     }
 
     //(Particle size)
-    // if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/3", data.particles_03um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/5", data.particles_05um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/10", data.particles_10um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/25um", data.particles_25um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/50um", data.particles_50um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/100um", data.particles_100um)) {
-    //   Serial.println("Particle sensor particle size values registration successful");
-    // } else {
-    //   Serial.println("Particle sensor particle size values registration unsuccessful");
-    // }
+    if (Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/3", data.particles_03um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/5", data.particles_05um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/10", data.particles_10um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/25um", data.particles_25um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/50um", data.particles_50um) && Firebase.RTDB.setInt(&fbdo, "SensorValues/ParticleSensor/ParticleSize/100um", data.particles_100um)) {
+      Serial.println("Particle sensor particle size values registration successful");
+    } else {
+      Serial.println("Particle sensor particle size values registration unsuccessful");
+    }
+
+    Serial.println(String(h).c_str());
   }
 
   Serial.println();

@@ -5,6 +5,8 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
     
+    <link rel="stylesheet" href="./main.css">
+
     <!--Firebase scripts-->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -48,15 +50,19 @@
         <div id="Humidity"></div>
     </div>
     
-    <div>
+    <div class="data">
         <form id="thresholdForm" method="POST">
             <div class="form-control">
-                <label for="temperature">Temperature (°C):</label>
-                <input type="number" name="temperature" id="temperature">
+                <label for="temperature">Max Temperature (°C):</label>
+                <input type="number" name="temperatureMin" id="temperatureMin">
+                <label for="temperatureMax">Max Temperature (°C):</label>
+                <input type="number" name="temperatureMax" id="temperatureMax">
             </div>
             <div class="form-control">
-                <label for="humidity">Humidity (%):</label>
-                <input type="number" name="humidity" id="humidity">
+                <label for="humidityMin">Min Humidity (%):</label>
+                <input type="number" name="humidityMin" id="humidityMin">
+                <label for="humidityMax">Max Humidity (%):</label>
+                <input type="number" name="humidityMax" id="humidityMax">
             </div>
             <div class="form-control">
                 <label for="number">Phone Number (+44):</label>
@@ -72,13 +78,18 @@
         form.addEventListener('submit', function (e) {
             e.preventDefault();
             
-            var temperature = document.getElementById('temperature').value;
-            var humidity = document.getElementById('humidity').value;
+            var temperatureMin = parseInt(document.getElementById('temperatureMin').value, 10);
+            var temperatureMax = parseInt(document.getElementById('temperatureMax').value, 10);
+            var humidityMin = parseInt(document.getElementById('humidityMin').value, 10);
+            var humidityMax = parseInt(document.getElementById('humidityMax').value, 10);
+            
             var phoneNumber = document.getElementById('number').value;
             
             db.ref('Thresholds').set({
-                Temperature: temperature,
-                Humidity: humidity
+                Min_Temperature: temperatureMin,
+                Max_Temperature: temperatureMax,
+                Min_Humidity: humidityMin,
+                Max_Humidity: humidityMax
             })
         });
     </script>
