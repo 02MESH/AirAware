@@ -1,3 +1,83 @@
+body {
+    background-color: #B4E4FF;
+}
+
+.centering {
+    display: flex;
+    align-items:center;
+    justify-content:center;
+}
+
 .data {
-    margin-top: 2%;
+    font-size: 3em;
+    background-color: white;
+    border-radius: 2%;
+    padding: 5%;
+}
+
+.test {
+    display: flex; /* Use flexbox */
+    justify-content: center; /* Horizontal alignment */
+}
+
+.carousel-item {
+    height: 25rem;
+    /* background: red; */
+    position: relative;
+}
+
+.carousel-item .container {
+    background-color: black;
+}
+
+.haha {
+    margin: 100px;
+}
+
+.green {
+    background: linear-gradient(90deg, #8ADAB2, #00DFA2, #D0F288);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+
+.yellow {
+    background: linear-gradient(90deg, #F7E987, #F8DE22, #FBD85D);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+
+.red {
+    background: linear-gradient(90deg, #F15A59, #ED2B2A, #D21312);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+
+.blue {
+    background: linear-gradient(90deg, #C5FFF8, #96EFFF, #5FBDFF);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+
+.orange {
+    background: linear-gradient(90deg, #FFD099, #FF9130, #FF5B22);
+    background-size: 400% 400%;
+    animation: gradient 5s ease infinite;
+}
+
+@keyframes gradient {
+    0% {
+        background-position: 0% 50%;
+    }
+    50% {
+        background-position: 100% 50%;
+    }
+    100% {
+        background-position: 0% 50%;
+    }
+}
+
+#thresholdForm {
+    align-items: center;
+    justify-content: center;
+    margin-top: 40%;
 }

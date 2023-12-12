@@ -3,10 +3,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>AirAware</title>
     
-    <link rel="stylesheet" href="./main.css">
-
     <!--Firebase scripts-->
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-app.js"></script>
     <script src="https://www.gstatic.com/firebasejs/8.10.0/firebase-database.js"></script>
@@ -17,12 +15,15 @@
     <!--bootstrap scripts-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     
+    <!--css files-->
+    <link rel="stylesheet" href="./main.css">
+    
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid ">
             <a class="navbar-brand " href="#">
-                <img src="" width="30" height="24" class="d-inline-block align-text-bottom">
+                <img src="favicon.ico" width="30" height="24" class="d-inline-block align-text-bottom">
                 AirAware
             </a>
             <button id="toggleButton" class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -45,35 +46,76 @@
         </div>
     </nav>
     
-    <div>
-        <div id="Temperature"></div>
-        <div id="Humidity"></div>
-    </div>
-    
-    <div class="data">
-        <form id="thresholdForm" method="POST">
-            <div class="form-control">
-                <label for="temperature">Max Temperature (°C):</label>
-                <input type="number" name="temperatureMin" id="temperatureMin">
-                <label for="temperatureMax">Max Temperature (°C):</label>
-                <input type="number" name="temperatureMax" id="temperatureMax">
-            </div>
-            <div class="form-control">
-                <label for="humidityMin">Min Humidity (%):</label>
-                <input type="number" name="humidityMin" id="humidityMin">
-                <label for="humidityMax">Max Humidity (%):</label>
-                <input type="number" name="humidityMax" id="humidityMax">
-            </div>
-            <div class="form-control">
-                <label for="number">Phone Number (+44):</label>
-                <input type="number" name="number" id="number">
-            </div>
-            <button type="submit">Submit</button>
-        </form>
+    <div class="container col-xxl-8 px-4 py-5 test">
+        <div class="container d-flex centering">
+            <form id="thresholdForm">
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <label class="form-label" for="temperature">Min Temperature (°C):</label>
+                            <input class="form-control" type="number" name="temperatureMin" id="temperatureMin">
+                        </div>
+                        
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <label class="form-label" for="temperatureMax">Max Temperature (°C):</label>
+                            <input class="form-control" type="number" name="temperatureMax" id="temperatureMax">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <label class="form-label" for="humidityMin">Min Humidity (%):</label>
+                            <input class="form-control" type="number" name="humidityMin" id="humidityMin">
+                        </div>
+                    </div>
+                    <div class="col-sm-6">
+                        <div class="mb-3">
+                            <label class="form-label" for="humidityMax">Max Humidity (%):</label>
+                            <input class="form-control" type="number" name="humidityMax" id="humidityMax">
+                        </div>
+                    </div>
+                    
+                </div>
+                <div class="row">
+                    <div class="mb-3">
+                        <label class="form-label" for="number">Phone Number (+44):</label>
+                        <input class="form-control" type="number" name="number" id="number">
+                    </div>
+                </div>
+                <button class="btn btn-dark" type="submit">Submit</button>
+            </form>
+        </div>
     </div>
     
     <script src="../util/main.js"></script>
     <script>
+        function populateInput() {
+            return Promise.all([
+            db.ref('Thresholds/Min_Temperature').once('value'),
+            db.ref('Thresholds/Max_Temperature').once('value'),
+            db.ref('Thresholds/Min_Humidity').once('value'),
+            db.ref('Thresholds/Max_Humidity').once('value'),
+            db.ref('ClientData/phoneNumber').once('value')
+            ]).then(function (snapshots) {
+                var temperatureMin = document.getElementById('temperatureMin');
+                var temperatureMax = document.getElementById('temperatureMax');
+                var humidityMin = document.getElementById('humidityMin');
+                var humidityMax = document.getElementById('humidityMax');
+                var phoneNumber = document.getElementById('number');
+                
+                temperatureMin.value = snapshots[0].val();
+                temperatureMax.value = snapshots[1].val();
+                humidityMin.value = snapshots[2].val();
+                humidityMax.value = snapshots[3].val();
+                phoneNumber.value = parseInt(snapshots[4].val().substr(3,10));
+            })
+        };
+        
+        populateInput();
+
         var form = document.getElementById("thresholdForm");
         form.addEventListener('submit', function (e) {
             e.preventDefault();
@@ -85,12 +127,42 @@
             
             var phoneNumber = document.getElementById('number').value;
             
+            if(temperatureMin < 0) {
+                alert('Minimum temperature cannot be less than 0°C');
+                return;
+            } else if(temperatureMax > 50) {
+                alert('Maximum temperature cannot be greater than 50°C');
+                return;
+            } else if(temperatureMin >= temperatureMax) {
+                alert('Minimum temperature must be greater than Maximum Temperature');
+                return;
+            } else if(humidityMin <= 10) {
+                alert('Minimum humidity cannot be less than 10%');
+                return;
+            } else if(humidityMax > 60) {
+                alert('Maximum humidity cannot be more than 60%');
+                return;
+            } else if(humidityMin >= humidityMax) {
+                alert('Minimum humidity cannot be greater than Maximum Temperature');
+                return;
+            } else if(phoneNumber.length !== 10) {
+                alert("Please enter a valid mobile number. Exclude the initial 0.");
+                return;
+            }
+            
             db.ref('Thresholds').set({
                 Min_Temperature: temperatureMin,
                 Max_Temperature: temperatureMax,
                 Min_Humidity: humidityMin,
                 Max_Humidity: humidityMax
             })
+            
+            phoneNumber = "+44" + phoneNumber;
+            db.ref('ClientData').set({
+                phoneNumber: phoneNumber
+            });
+
+            alert("Configurations changed!")
         });
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>

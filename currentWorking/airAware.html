@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Document</title>
+    <title>AirAware</title>
 
     <!--Stylesheets here-->
     <link rel="stylesheet" href="./main.css">
@@ -18,12 +18,15 @@
     <!--bootstrap scripts-->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-T3c6CoIi6uLrA9TneNEoa7RxnatzjcDSCmG1MXxSR1GAsXEV/Dwwykc2MPK8M2HN" crossorigin="anonymous">
     
+    <!--css files-->
+    <link rel="stylesheet" href="./main.css">
+
 </head>
 <body>
     <nav class="navbar navbar-expand-lg navbar-dark bg-dark fixed-top">
         <div class="container-fluid ">
             <a class="navbar-brand " href="#">
-                <img src="" width="30" height="24" class="d-inline-block align-text-bottom">
+                <img src="favicon.ico" width="30" height="24" class="d-inline-block align-text-bottom">
                 AirAware
             </a>
             <button id="toggleButton" class="navbar-toggler" type="button" data-bs-toggle="collapse"
@@ -45,15 +48,81 @@
             </ul>
         </div>
     </nav>
-    
-    <div class="data">
-        <div id="Temperature"></div>
-        <div id="Humidity"></div>
+
+    <div id="myCarousel" class="carousel slide mb-6 pointer-event" data-bs-ride="carousel" style="height:500px;">
+        <div class="carousel-indicators">
+          <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="0" class="active" aria-label="Slide 1" aria-current="true"></button>
+          <button type="button" data-bs-target="#myCarousel" data-bs-slide-to="1" aria-label="Slide 2" class=""></button>
+        </div>
+        <div class="carousel-inner">
+          <div class="carousel-item active" data-bs-interval="10000">
+            <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect></svg>
+            <div class="container">
+              <div class="carousel-caption text-start">
+                <h1>Reading values</h1>
+                <ul>
+                    <li>
+                        <strong>Temperature:</strong><span> The recommend range for temperature should be around 20°C-24°C, although you can adjust this
+                            in the <a style="color:black;" href="./config.html">Configuration page.</a>
+                        </span>
+                    </li>
+                    <li>
+                        <strong>Humidity: </strong><span>The recommended range for humidity should be around 30%-60%. However, 
+                            you can adjust this value as per your liking in the <a style="color:black;" href="./config.html">Configuration page.</a>
+                        </span>
+                    </li>
+                    <li>
+                        <strong>Particulate Matter 2.5:</strong>
+                        <span>PM2.5 Concentration below 10 µg/m³ has been considered healthy by the WHO.
+                            Values between 10 µg/m³ and 25 µg/m³ means that the air is slightly contaminated and the 
+                            air purifier is needed to sanitize the air because of contaminants. A rating of 
+                            above 25 µg/m³ means that the air is seriously contaminated which would also require
+                            turning on the air purifier, but also professional help if it doesn't improve.
+                        </span>
+                    </li>
+                </ul>
+              </div>
+            </div>
+          </div>
+          <div class="carousel-item" data-bs-interval="10000">
+            <svg class="bd-placeholder-img" width="100%" height="100%" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" preserveAspectRatio="xMidYMid slice" focusable="false"><rect width="100%" height="100%" fill="var(--bs-secondary-color)"></rect></svg>
+            <div class="container">
+              <div class="carousel-caption text-end">
+                <h1>Text Messages.</h1>
+                <div>This feature isn't just about data monitoring; it's about proactive protection and control. 
+                    Users can take prompt action upon receiving alerts, ensuring a safer and more comfortable environment. 
+                    Furthermore, the system is thoughtfully designed to prevent excessive messaging. Instead of bombarding 
+                    users with constant notifications, it smartly limits messages to one every 30 minutes for each breached 
+                    threshold, avoiding unnecessary interruptions.</div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <button class="carousel-control-prev" type="button" data-bs-target="#myCarousel" data-bs-slide="prev">
+          <span class="carousel-control-prev-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Previous</span>
+        </button>
+        <button class="carousel-control-next" type="button" data-bs-target="#myCarousel" data-bs-slide="next">
+          <span class="carousel-control-next-icon" aria-hidden="true"></span>
+          <span class="visually-hidden">Next</span>
+        </button>
+      </div>
+
+    <div class="container col-xxl-8 px-4 py-5 test">
+        <div class="container d-flex centering">
+            <div class="data">
+                <div class="green" id="Temperature"></div>
+                <div id="Humidity"></div>
+                <div id="PM25"></div>
+            </div>
+        </div>
     </div>
-    
+
+
+
     <script src="../util/main.js"></script>
     <script>
-        getData();
+        setInterval(getData(), 10000);
     </script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" integrity="sha384-C6RzsynM9kWDrMNeT87bh95OGNyZPhcTNXj1NW7RuBCsyN/o0jlpcV8Qyq46cDfL" crossorigin="anonymous"></script>
     
